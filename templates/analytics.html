@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block heading %}Historical Pharmacy Analytics{% endblock %}
+{% block content %}
+<div class="page-intro">
+  <div><h2>Historical sales intelligence</h2><p>Analysis of the supplied pharmacy-retail CSV dataset (Germany, 2019–2020). This is separate from your live MediStock SQLite records.</p></div>
+  <a class="button" href="{{ url_for('analytics') }}">↻ Reset filters</a>
+</div>
+<div class="panel form-panel">
+  <form class="filter-form analytics-filters" method="get">
+    <label>Year<select name="year"><option value="all" {{'selected' if selected_year=='all' else ''}}>All years</option>{% for y in years %}<option value="{{y}}" {{'selected' if selected_year|string==y|string else ''}}>{{y}}</option>{% endfor %}</select></label>
+    <label>Medicine class<select name="product_class"><option value="all">All classes</option>{% for c in classes %}<option value="{{c}}" {{'selected' if selected_class==c else ''}}>{{c}}</option>{% endfor %}</select></label>
+    <label>City<select name="city"><option value="all">All cities</option>{% for c in cities %}<option value="{{c}}" {{'selected' if selected_city==c else ''}}>{{c}}</option>{% endfor %}</select></label>
+    <button class="button primary">Apply filters</button>
+  </form>
+</div>
+<section class="kpi-grid analytics-kpis">
+  <div class="kpi"><div class="kpi-head">TOTAL SALES VALUE</div><strong>{{compact_number(total_sales)}}</strong><small class="positive">Historical source values</small></div>
+  <div class="kpi"><div class="kpi-head">UNITS / QUANTITY</div><strong>{{compact_number(total_units)}}</strong><small class="muted">Net quantity, including returns</small></div>
+  <div class="kpi"><div class="kpi-head">RECORDS</div><strong>{{"{:,}".format(transactions)}}</strong><small class="muted">Rows matching filters</small></div>
+  <div class="kpi"><div class="kpi-head">AVERAGE SALES / ROW</div><strong>{{compact_number(avg_sale)}}</strong><small class="muted">Sales value ÷ matching rows</small></div>
+</section>
+<div class="analytics-grid">
+  <section class="panel">
+    <div class="panel-title"><div><h3>Sales by year</h3><p>Annual sales value</p></div></div>
+    {% for d in year_chart %}<div class="hbar-row"><span>{{d.label}}</span><div class="hbar-track"><i style="width:{{d.width}}%"></i></div><b>{{compact_number(d.value)}}</b></div>{% else %}<p class="empty">No data for these filters.</p>{% endfor %}
+  </section>
+  <section class="panel">
+    <div class="panel-title"><div><h3>Sales by medicine class</h3><p>Share of total sales · Pie chart</p></div></div>
+    <div class="pie-layout"><div class="pie-chart" style="background:{{pie_gradient}}"><div class="pie-hole"><b>{{compact_number(total_sales)}}</b><small>SALES</small></div></div>
+      <div class="pie-legend">{% for label,value in class_totals %}<div><i style="background:{{['#2563eb','#14b8a6','#f59e0b','#8b5cf6','#ef4444','#64748b'][loop.index0%6]}}"></i><span>{{label}}</span><b>{{"%.1f"|format(value/total_sales*100 if total_sales else 0)}}%</b></div>{% else %}<p class="empty">No category data.</p>{% endfor %}</div>
+    </div>
+  </section>
+</div>
+<section class="panel chart-panel">
+  <div class="panel-title"><div><h3>Monthly sales distribution</h3><p>All selected records grouped by calendar month</p></div></div>
+  <div class="month-chart">{% for m in month_chart %}<div class="month-bar"><div class="month-bar-track"><i style="height:{{m.height}}%"></i></div><b>{{m.label}}</b><small>{{compact_number(m.value)}}</small></div>{% else %}<p class="empty">No monthly data.</p>{% endfor %}</div>
+</section>
+<div class="analytics-grid">
+  <section class="panel">
+    <div class="panel-title"><div><h3>Top products</h3><p>Ranked by total sales value</p></div></div>
+    {% for d in product_chart %}<div class="hbar-row product-row"><span title="{{d.label}}">{{d.label}}</span><div class="hbar-track"><i style="width:{{d.width}}%"></i></div><b>{{compact_number(d.value)}}</b></div>{% else %}<p class="empty">No product data.</p>{% endfor %}
+  </section>
+  <section class="panel">
+    <div class="panel-title"><div><h3>Top distributors</h3><p>Ranked by total sales value</p></div></div>
+    {% for name,value in distributor_totals %}<div class="top-item"><span>{{name}}</span><b>{{compact_number(value)}}</b></div>{% else %}<p class="empty">No distributor data.</p>{% endfor %}
+  </section>
+</div>
+<section class="panel data-quality">
+  <div class="panel-title"><div><h3>Dataset quality & source notes</h3><p>Checks across the complete selected CSV, independent of filters</p></div><span class="status good">CSV loaded</span></div>
+  <div class="quality-grid">
+    <div><b>{{"{:,}".format(source_count)}}</b><span>Source rows</span></div>
+    <div><b>{{negative_sales}}</b><span>Negative sales rows</span></div>
+    <div><b>{{negative_qty}}</b><span>Negative quantity rows</span></div>
+    <div><b>{{duplicate_rows}}</b><span>Exact duplicate rows</span></div>
+  </div>
+  <p class="muted small-note">Negative values may represent returns or credit adjustments; they are retained so net sales are not overstated. The source does not specify a currency, so these values are intentionally not displayed with ₹. The CSV is historical data, not live inventory or current transactions.</p>
+</section>
+{% endblock %}

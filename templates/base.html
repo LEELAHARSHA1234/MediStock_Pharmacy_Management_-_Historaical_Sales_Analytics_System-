@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MediStock | Pharmacy Inventory System</title><link rel="stylesheet" href="{{ url_for('static',filename='style.css') }}"></head>
+<body><div class="app-shell">
+<aside class="sidebar"><a class="brand" href="{{ url_for('dashboard') }}"><span class="brand-mark">✚</span><span><b>MediStock</b><small>PHARMACY SYSTEM</small></span></a>
+<div class="side-label">WORKSPACE</div><nav>
+<a class="{{'active' if active=='dashboard' else ''}}" href="{{url_for('dashboard')}}">▦ <span>Dashboard</span></a>
+<a class="{{'active' if active=='inventory' else ''}}" href="{{url_for('inventory')}}">▤ <span>Inventory</span></a>
+<a class="{{'active' if active=='purchases' else ''}}" href="{{url_for('purchases')}}">＋ <span>Purchases</span></a>
+<a class="{{'active' if active=='sales' else ''}}" href="{{url_for('sales')}}">↗ <span>Sales</span></a>
+<a class="{{'active' if active=='suppliers' else ''}}" href="{{url_for('suppliers')}}">♧ <span>Suppliers</span></a>
+<a class="{{'active' if active=='reports' else ''}}" href="{{url_for('reports')}}">▥ <span>Reports</span></a>
+<a class="{{'active' if active=='analytics' else ''}}" href="{{url_for('analytics')}}">◔ <span>Historical Analytics</span></a>
+<a class="{{'active' if active=='settings' else ''}}" href="{{url_for('settings')}}">⚙ <span>Settings</span></a></nav>
+<div class="sidebar-bottom"><div class="avatar">PH</div><div><b>Pharmacy Admin</b><small>Administrator</small></div></div></aside>
+<main class="main"><header class="topbar"><div><div class="eyebrow">MAIN BRANCH · PHARMACY OPERATIONS</div><h1>{% block heading %}Inventory Overview{% endblock %}</h1></div><div class="top-actions"><span class="date-chip">◷ {{ today }}</span><span class="admin-chip">● System online</span></div></header>
+{% with messages=get_flashed_messages(with_categories=true) %}{% if messages %}<div class="flashes">{% for category,message in messages %}<div class="flash {{category}}">{{message}}</div>{% endfor %}</div>{% endif %}{% endwith %}
+{% block content %}{% endblock %}
+<footer>MEDISTOCK <span>·</span> Pharmacy Inventory & Sales Management</footer></main></div>
+<script>
+document.querySelectorAll('[data-confirm]').forEach(el=>el.addEventListener('click',e=>{if(!confirm(el.dataset.confirm))e.preventDefault()}));
+document.querySelectorAll('[data-edit]').forEach(btn=>btn.addEventListener('click',()=>{const d=JSON.parse(btn.dataset.edit);const form=document.getElementById('medicine-form');Object.keys(d).forEach(k=>{const el=form.elements[k];if(el)el.value=d[k]??''});document.getElementById('form-title').textContent='Edit medicine';document.getElementById('cancel-edit').hidden=false;form.scrollIntoView({behavior:'smooth'});}));
+document.getElementById('cancel-edit')?.addEventListener('click',()=>{const f=document.getElementById('medicine-form');f.reset();f.elements.id.value='';document.getElementById('form-title').textContent='Add a medicine';document.getElementById('cancel-edit').hidden=true;});
+</script></body></html>
